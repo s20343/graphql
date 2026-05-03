@@ -9,6 +9,9 @@ type Mutation {
     addMovie(title: String!, director: String!, releaseYear: Int!): Movie
     addReview(reviewerName: String!, content: String!, rating: Int!, movieId: ID!): Review
     deleteReview(id: ID!): Boolean
+    deleteMovie(id: ID!): Boolean
+    updateMovie(id: ID!, title: String!, director: String!, releaseYear: Int!): Movie
+    updateReview(id: ID!, reviewerName: String!, content: String!, rating: Int!): Review
 }
 
 type Movie {
