@@ -71,14 +71,12 @@ public class MovieController {
     @BatchMapping
     public Map<Movie, List<Review>> reviews(List<Movie> movies) {
 
-        // 1. Fetch all reviews for the list of movies
+        
         List<Review> reviews = reviewRepository.findByMovieIn(movies);
 
-        // 2. Group the reviews directly by the Movie object
         Map<Movie, List<Review>> reviewsByMovie = reviews.stream()
                 .collect(Collectors.groupingBy(Review::getMovie));
 
-        // 3. Ensure movies with 0 reviews get an empty list instead of null
         movies.forEach(movie -> reviewsByMovie.putIfAbsent(movie, List.of()));
 
         return reviewsByMovie;
