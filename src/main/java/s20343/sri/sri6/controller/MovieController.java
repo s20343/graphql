@@ -1,6 +1,7 @@
 package s20343.sri.sri6.controller;
 
 
+import graphql.GraphQLException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.*;
 import org.springframework.stereotype.Controller;
@@ -51,7 +52,7 @@ public class MovieController {
                              @Argument Integer releaseYear) {
 
         Movie toUpdate = movieRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Movie with id: " + id + " not found"));
+                .orElseThrow(() -> new GraphQLException("Movie with id " + id + " not found"));
 
         if (title != null) toUpdate.setTitle(title);
         if (director != null) toUpdate.setDirector(director);
@@ -67,24 +68,21 @@ public class MovieController {
         movieRepository.deleteById(id);
         return true;
     }
-
     @BatchMapping
     public Map<Movie, List<Review>> reviews(List<Movie> movies) {
 
-        List<Long> movieIds = movies.stream()
-                .map(Movie::getId)
-                .toList();
+        // 1. Fetch all reviews for the list of movies
+        List<Review> reviews = reviewRepository.findByMovieIn(movies);
 
-        List<Review> reviews = reviewRepository.findByMovie_IdIn(movieIds);
+        // 2. Group the reviews directly by the Movie object
+        Map<Movie, List<Review>> reviewsByMovie = reviews.stream()
+                .collect(Collectors.groupingBy(Review::getMovie));
 
-        Map<Long, List<Review>> reviewsByMovieId = reviews.stream()
-                .collect(Collectors.groupingBy(r -> r.getMovie().getId()));
+        // 3. Ensure movies with 0 reviews get an empty list instead of null
+        movies.forEach(movie -> reviewsByMovie.putIfAbsent(movie, List.of()));
 
-        return movies.stream()
-                .collect(Collectors.toMap(
-                        movie -> movie,
-                        movie -> reviewsByMovieId.getOrDefault(movie.getId(), List.of())
-                ));
+        return reviewsByMovie;
     }
+
 
 }

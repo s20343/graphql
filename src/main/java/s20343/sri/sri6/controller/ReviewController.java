@@ -30,46 +30,5 @@ public class ReviewController {
         return reviewRepository.findById(id).orElse(null);
     }
 
-    @MutationMapping
-    public Review addReview(@Argument String reviewerName,
-                            @Argument String content,
-                            @Argument Integer rating,
-                            @Argument Long movieId) {
 
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new RuntimeException("Movie with id: " + movieId + " not found"));
-
-        Review review = Review.builder()
-                .reviewerName(reviewerName)
-                .content(content)
-                .rating(rating)
-                .movie(movie)
-                .build();
-
-        return reviewRepository.save(review);
-    }
-
-    @MutationMapping
-    public Review updateReview(@Argument Long id,
-                               @Argument String reviewerName,
-                               @Argument String content,
-                               @Argument Integer rating) {
-
-        Review toUpdate = reviewRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Review with id: " + id + " not found"));
-
-        if (reviewerName != null) toUpdate.setReviewerName(reviewerName);
-        if (content != null) toUpdate.setContent(content);
-        if (rating != null) toUpdate.setRating(rating);
-
-        return reviewRepository.save(toUpdate);
-    }
-
-    @MutationMapping
-    public Boolean deleteReview(@Argument Long id) {
-        if (!reviewRepository.existsById(id)) return false;
-
-        reviewRepository.deleteById(id);
-        return true;
-    }
 }
